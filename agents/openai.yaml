@@ -1,0 +1,4 @@
+interface:
+  display_name: "网店大数据报告"
+  short_description: "基于 HandaaS 网店大数据 MCP，生成国内外网店概况 / 电商产品画像 / 电商店铺信息的专业 HTML / Markdown / JSON 报告。"
+  default_prompt: "使用 $estore-report 生成「企业名称」的网店大数据报告：自动补全企业全称，调用网店 MCP 工具，产出 HTML + Markdown + JSON 三件套。"
