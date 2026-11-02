@@ -20,7 +20,6 @@ import argparse
 import datetime as dt
 import json
 import pathlib
-import sys
 from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 from common import REPORT_BANNER, REPORT_TYPE, json_dumps, load_json_file, print_json
@@ -42,44 +41,71 @@ T_STORE = "estore_bigdata_ecommerce_store_info"
 
 
 def _is_api_error(value: Any) -> bool:
-    """Detect MCP API error responses (not empty data, but actual failures like 405)."""
+    """Return True for failed MCP/tool envelopes, never for a successful empty result."""
     if value is None:
         return False
     if isinstance(value, str):
-        return any(s in value for s in ("接口调用失败", "查询失败", "状态码：4", "状态码：5"))
+        text = value.strip().lower()
+        return any(marker in text for marker in (
+            "接口调用失败", "查询失败", "状态码：4", "状态码：5",
+            "error executing tool", "validation error", "密钥错误", "鉴权失败",
+        ))
+    if isinstance(value, list):
+        return any(_is_api_error(item) for item in value)
     if isinstance(value, dict):
-        for v in value.values():
-            if isinstance(v, str) and any(s in v for s in ("接口调用失败", "查询失败", "状态码：4", "状态码：5")):
-                return True
+        if value.get("isError") is True or value.get("is_error") is True or value.get("success") is False:
+            return True
+        if value.get("_error") not in (None, "", False) or value.get("error") not in (None, "", False):
+            return True
+        if set(value) <= {"text", "code", "status", "message", "msg"} and value.get("text"):
+            text = str(value.get("text")).strip()
+            if "查询数据为空" in text:
+                return False
+            return True
+        return any(
+            _is_api_error(value.get(key))
+            for key in ("text", "message", "msg", "detail", "content")
+            if key in value
+        )
     return False
 
+
 def _first_list(value: Any) -> List[Any]:
-    if isinstance(value, list):
-        return value
-    if isinstance(value, dict):
-        if _is_api_error(value):
-            return []
-        # Treat upstream empty responses ({"text": "查询数据为空"}) and internal
-        # skip markers ({"_error": "未指定..."}) as empty so tables don't render
-        # a phantom all-"-" row.
-        if set(value.keys()) <= {"text", "error", "code", "_error"} and not any(
-            isinstance(value.get(k), list) for k in ("resultList", "list", "items", "data")
-        ):
-            return []
-        for key in ("resultList", "list", "items", "data"):
-            if isinstance(value.get(key), list):
-                return value[key]
-    if value in (None, "", {}):
+    """Extract business records without turning envelopes into phantom rows."""
+    if _is_api_error(value):
         return []
-    return [value]
+    if isinstance(value, list):
+        cleaned: List[Any] = []
+        for item in value:
+            if _is_api_error(item) or item in (None, "", {}, []):
+                continue
+            if isinstance(item, dict):
+                business_values = [v for k, v in item.items() if k not in {"total", "count", "code", "message", "msg"}]
+                if business_values and all(v in (None, "", "-", [], {}) for v in business_values):
+                    continue
+            cleaned.append(item)
+        return cleaned
+    if isinstance(value, dict):
+        for key in ("resultList", "storeList", "list", "items", "data", "records"):
+            nested = value.get(key)
+            if isinstance(nested, list):
+                return nested
+        envelope_keys = {
+            "text", "message", "msg", "code", "status", "success", "total", "count",
+            "pageIndex", "pageSize", "isError", "is_error", "content", "structuredContent",
+            "structured_content", "_error", "error",
+        }
+        if set(value) <= envelope_keys:
+            return []
+        if value:
+            return [value]
+    return []
 
 
 def _first_record(value: Any) -> Dict[str, Any]:
     for record in _first_list(value):
-        if isinstance(record, dict):
+        if isinstance(record, dict) and not _is_api_error(record):
             return record
-    if isinstance(value, dict):
-        return value
     return {}
 
 
@@ -109,8 +135,8 @@ def _safe_call(tool: str, arguments: Dict[str, Any]) -> Any:
         if _is_api_error(result):
             return {"_error": "API错误"}
         return result
-    except Exception as exc:
-        return {"_error": str(exc)}
+    except Exception:
+        return {"_error": "调用失败"}
 
 
 def _safe_total(payload: Any) -> Any:
@@ -119,6 +145,11 @@ def _safe_total(payload: Any) -> Any:
             return None
         return payload.get("total")
     return None
+
+
+def _failed_tools(sources: Mapping[str, Any]) -> List[str]:
+    """Return only safe tool/dimension labels for failed calls."""
+    return [name for name, payload in sources.items() if _is_api_error(payload)]
 
 
 # --------------------------------------------------------------------------- #
@@ -132,6 +163,15 @@ def resolve_enterprise_name(raw: str) -> Dict[str, Any]:
     if any(suffix in raw for suffix in ("公司", "集团", "有限", "院", "厂", "中心", "事务所", "合作社", "合伙")):
         return {"keyword": raw, "enterprise": raw, "resolved": True, "reason": "视为企业全称"}
     fuzzy = _safe_call(T_FUZZY, {"matchKeyword": raw, "pageSize": 1})
+    fuzzy_total = _int(_safe_total(fuzzy))
+    if fuzzy_total is not None and fuzzy_total > 1:
+        return {
+            "keyword": raw,
+            "enterprise": raw,
+            "resolved": False,
+            "reason": f"模糊查询返回多候选（{fuzzy_total}），未静默选择首条",
+            "fuzzy_total": fuzzy_total,
+        }
     record = _first_record(fuzzy)
     name = str(record.get("name") or "").strip()
     if name:
@@ -205,7 +245,7 @@ def _derive_core_metrics(metrics: List[Dict[str, Any]], core: Mapping[str, Any])
         try:
             total_sales = sum(float(str(r.get("销量", "0")).replace(",", "")) for r in stores if str(r.get("销量", "0")).replace(",", "").replace(".", "").isdigit())
             if total_sales > 0:
-                metrics.append({"label": "店铺总销量", "value": f"{total_sales:.0f}", "hint": "电商店铺销量合计"})
+                metrics.append({"label": "当前页关联网店销量合计", "value": f"{total_sales:.0f}", "hint": "仅汇总当前响应关联网店，不代表查询主体自营销量"})
         except Exception:
             pass
     if isinstance(profile, dict) and profile:
@@ -231,13 +271,29 @@ def build_subject(raw: str, resolved: Mapping[str, Any], keyword_type: str) -> D
 
 
 def build_caliber(subject: Mapping[str, Any]) -> Dict[str, Any]:
+    products = [item["name"] for item in _requested_product_rows(subject)]
     return {
         "match_target": subject.get("enterprise") or subject.get("match_raw"),
         "match_type": f"网店维度按企业主体匹配（keywordType={subject.get('keywordType', 'name')}）；支持企业名称/注册号/统一社会信用代码/企业 id",
-        "data_scope": "国内外网店概况、电商产品画像、电商店铺信息",
-        "products": ["国内外网店概况", "电商产品画像", "电商店铺信息"],
-        "limit": "数据来自电商平台公开信息；少量字段可能存在更新延迟。",
+        "data_scope": "、".join(products),
+        "products": products,
+        "limit": "数据来自电商平台公开信息；少量字段可能存在更新延迟。上游销售额字段按原口径呈现，不等同于可审计 GMV，也不用于外推企业整体交易规模。",
     }
+
+
+def _requested_product_rows(subject: Mapping[str, Any]) -> List[Dict[str, str]]:
+    reason = str(subject.get("resolve_reason") or "")
+    rows: List[Dict[str, str]] = []
+    if reason and reason not in ("视为企业全称", "关键词为空"):
+        rows.append({"name": "企业模糊查询", "product_id": "675cea1f0e009a9ea37edaa1"})
+    if subject.get("blocked_reason"):
+        return rows
+    rows.extend([
+        {"name": "国内外网店概况", "product_id": "66d5b7df537c3f61d646c327"},
+        {"name": "电商产品画像", "product_id": "66c33eff3c0917a9a02feba8"},
+        {"name": "电商店铺信息", "product_id": "66a34ccedbee527b7a831c98"},
+    ])
+    return rows
 
 
 def _kv_from(payload: Any, mapping: List[tuple]) -> Dict[str, Any]:
@@ -310,7 +366,7 @@ def _platform_rows_from_list(platform_list: Sequence[str]) -> List[Dict[str, Any
     return out
 
 
-def build_core_analysis(profile: Any, product: Any, store: Any) -> Dict[str, Any]:
+def build_core_analysis(profile: Any, product: Any, store: Any, query_enterprise: str = "") -> Dict[str, Any]:
     p = profile if isinstance(profile, dict) else {}
     prod = product if isinstance(product, dict) else {}
     st = store if isinstance(store, dict) else {}
@@ -367,8 +423,17 @@ def build_core_analysis(profile: Any, product: Any, store: Any) -> Dict[str, Any
         if not isinstance(item, dict):
             continue
         bs = item.get("businessStatistics") or {}
+        owner = _text(item.get("enterpriseName")) or "-"
+        if owner == "-":
+            relation = "上游仅返回关联记录，所属企业未知"
+        elif query_enterprise and owner == query_enterprise:
+            relation = "上游关联企业与查询主体同名，不等于自营证明"
+        else:
+            relation = "上游关联记录，所属企业与查询主体不同或待核验"
         store_rows.append({
             "店铺名称": _text(item.get("eshopName")) or "-",
+            "所属企业": owner,
+            "关联性质": relation,
             "链接": _text(item.get("eshopUrl")) or "-",
             "开店时间": _text(item.get("eshopFoundTime")) or "-",
             "状态": ("已下线" if item.get("isExpired") else "在营") if item.get("isExpired") is not None else "-",
@@ -392,8 +457,8 @@ def build_core_analysis(profile: Any, product: Any, store: Any) -> Dict[str, Any
         {"key": "platform_dist", "title": "电商平台分布", "kind": "bar", "note": "企业覆盖的电商平台",
          "chart": {"name": "平台", "value": "店铺/商品数", "orient": "v"},
          "columns": [("平台", "平台"), ("店铺/商品数", "店铺/商品数")]},
-        {"key": "store_table", "title": "电商店铺信息", "kind": "table", "note": f"共 {len(store_rows)} 家店铺，展示前 N 家",
-         "columns": [("店铺名称", "店铺名称"), ("链接", "链接"), ("开店时间", "开店时间"), ("状态", "状态"), ("销售额", "销售额"), ("粉丝数", "粉丝数"), ("好评率", "好评率"), ("综合评分", "综合评分")]},
+        {"key": "store_table", "title": "电商关联网店信息", "kind": "table", "note": f"当前响应展示 {len(store_rows)} 家关联网店；仅为本次返回记录，不代表全部店铺或平台覆盖，关联不等于查询主体自营",
+         "columns": [("店铺名称", "店铺名称"), ("所属企业", "所属企业"), ("关联性质", "关联性质"), ("链接", "链接"), ("开店时间", "开店时间"), ("状态", "状态"), ("销售额", "销售额"), ("粉丝数", "粉丝数"), ("好评率", "好评率"), ("综合评分", "综合评分")]},
     ]
     return {
         "sections": sections,
@@ -409,6 +474,8 @@ def build_records(core: Mapping[str, Any]) -> List[Dict[str, Any]]:
     for item in core.get("store_table") or []:
         rows.append({
             "店铺名称": item.get("店铺名称") or "-",
+            "所属企业": item.get("所属企业") or "-",
+            "关联性质": item.get("关联性质") or "-",
             "开店时间": item.get("开店时间") or "-",
             "状态": item.get("状态") or "-",
             "销售额": item.get("销售额") or "-",
@@ -417,13 +484,12 @@ def build_records(core: Mapping[str, Any]) -> List[Dict[str, Any]]:
     return rows[:20]
 
 
-def build_insights(subject: Mapping[str, Any], core: Mapping[str, Any], metrics: List[Mapping[str, Any]]) -> List[Dict[str, Any]]:
+def build_insights(subject: Mapping[str, Any], core: Mapping[str, Any], metrics: Sequence[Mapping[str, Any]]) -> List[Dict[str, Any]]:
     insights: List[Dict[str, Any]] = []
     metric_map = {m["label"]: str(m["value"]) for m in metrics}
     store_count = metric_map.get("网店总数") or metric_map.get("国内网店数")
     platforms = metric_map.get("覆盖平台")
     product_total = metric_map.get("电商产品数") or metric_map.get("在售商品数")
-    profile_kv = core.get("profile_overview") or {}
     product_kv = core.get("product_overview") or {}
 
     if store_count:
@@ -432,7 +498,9 @@ def build_insights(subject: Mapping[str, Any], core: Mapping[str, Any], metrics:
         dom = metric_map.get("国内网店数")
         if dom and ovs:
             try:
-                d = float(dom); o = float(ovs); tot = d + o
+                d = float(dom)
+                o = float(ovs)
+                tot = d + o
                 if tot > 0:
                     insights.append({
                         "feature": "网店规模与区域结构",
@@ -479,9 +547,9 @@ def build_insights(subject: Mapping[str, Any], core: Mapping[str, Any], metrics:
     store_rows = core.get("store_table") or []
     if store_rows:
         insights.append({
-            "feature": "店铺布局",
-            "evidence": f"电商店铺明细 {len(store_rows)} 家。",
-            "interpretation": "店铺明细反映企业电商渠道的具体形态与开店年限；结合销售额与粉丝数可评估单店运营成熟度。",
+            "feature": "关联网店样本",
+            "evidence": f"当前响应包含电商关联网店明细 {len(store_rows)} 家。",
+            "interpretation": "关联记录可用于核验渠道线索，但不自动证明店铺由查询主体自营；应结合所属企业字段逐条判断。",
         })
     # 平均评分 insight
     avg_rate = product_kv.get("店铺平均评分")
@@ -509,11 +577,11 @@ def build_metrics(profile: Any, product: Any, store: Any) -> List[Dict[str, Any]
     # 真实字段：domesticEshopCount / domesticEshopProductCount / domesticEshopPlatformList / overseasEshop*。
     dom_n = _int(p.get("domesticEshopCount"))
     ovs_n = _int(p.get("overseasEshopCount"))
-    store_n = (dom_n or 0) + (ovs_n or 0)
-    # 回退到店铺信息接口的 eshopListCount / overview.enterpriseEshopCount。
-    if not store_n and isinstance(st, dict):
-        store_n = _int(st.get("eshopListCount")) or _int((st.get("overview") or {}).get("enterpriseEshopCount"))
-    if store_n:
+    store_n: Optional[int] = None
+    if dom_n is not None or ovs_n is not None:
+        store_n = (dom_n or 0) + (ovs_n or 0)
+    # 店铺信息接口只提供本次关联记录，不能回填国内外网店画像总量。
+    if store_n is not None:
         metrics.append({"label": "网店总数", "value": str(store_n), "hint": "国内外网店总量"})
     if dom_n is not None:
         if dom_n and ovs_n:
@@ -527,7 +595,8 @@ def build_metrics(profile: Any, product: Any, store: Any) -> List[Dict[str, Any]
     if isinstance(platforms, list) and platforms:
         metrics.append({"label": "覆盖平台", "value": str(len(platforms)) + " 个", "hint": "覆盖电商平台数"})
     # 产品数：profile.domesticEshopProductCount 或 product.ecShopItemCount。
-    prod_n = _int(p.get("domesticEshopProductCount")) or _int(prod.get("ecShopItemCount"))
+    profile_product_n = _int(p.get("domesticEshopProductCount"))
+    prod_n = profile_product_n if profile_product_n is not None else _int(prod.get("ecShopItemCount"))
     if prod_n is not None:
         if prod_n and store_n:
             metrics.append({"label": "电商产品数", "value": str(prod_n), "hint": "电商在售商品总量", "delta": f"店均商品 {prod_n / store_n:.1f}"})
@@ -539,19 +608,33 @@ def build_metrics(profile: Any, product: Any, store: Any) -> List[Dict[str, Any]
         metrics.append({"label": "店铺平均评分", "value": _text(avg_rate), "hint": "电商店铺平均评分"})
     # 店铺明细数
     if isinstance(st, dict):
-        shop_detail_n = _int(st.get("eshopListCount")) or (len(st.get("eshopList") or []) if isinstance(st.get("eshopList"), list) else None)
+        shop_detail_n = (len(st.get("eshopList") or []) if isinstance(st.get("eshopList"), list)
+                         else _int(st.get("eshopListCount")))
         if shop_detail_n is not None:
-            metrics.append({"label": "店铺明细", "value": str(shop_detail_n), "hint": "电商店铺明细条数"})
+            metrics.append({"label": "关联网店明细", "value": str(shop_detail_n), "hint": "当前响应实际返回记录数，不代表全部店铺或自营店铺数"})
     return [m for m in metrics if m.get("value") not in ("", None, "-")]
 
 
-def build_abstract(subject: Mapping[str, Any], core: Mapping[str, Any], metrics: List[Mapping[str, Any]]) -> str:
+def build_abstract(subject: Mapping[str, Any], core: Mapping[str, Any], metrics: Sequence[Mapping[str, Any]]) -> str:
     name = subject.get("enterprise") or subject.get("match_raw") or "目标企业"
-    parts = [f"本报告以“{name}”为分析对象，基于电商平台公开数据，系统呈现企业国内外网店概况、电商产品画像与电商店铺信息。"]
+    scopes: List[str] = []
+    if core.get("profile_overview"):
+        scopes.append("网店概况")
+    if core.get("product_overview"):
+        scopes.append("电商产品画像")
+    if core.get("platform_dist"):
+        scopes.append("平台分布")
+    if core.get("store_table"):
+        scopes.append("关联网店当前响应明细与生命周期字段")
+    scope_text = "、".join(scopes) or "查询边界"
+    parts = [f"本报告以“{name}”为分析对象，基于电商平台公开数据，呈现{scope_text}；关联记录不等于查询主体自营店铺。"]
     if metrics:
         kv = "、".join(f"{m['label']} {m['value']}" for m in metrics[:5])
         parts.append(f"关键指标包括：{kv}。")
-    parts.append("报告围绕网店规模、平台覆盖与产品/店铺结构给出结构化解读，便于电商运营、渠道管理与竞品分析决策参考。")
+    if core.get("profile_overview") or core.get("product_overview") or core.get("platform_dist"):
+        parts.append("报告仅围绕成功返回的网店画像、平台或产品维度给出结构化解读，不以缺失维度补推企业整体规模。")
+    elif core.get("store_table"):
+        parts.append("报告仅核验本次返回的关联网店记录，不据此推断全部店铺、平台覆盖、企业 GMV 或全渠道规模。")
     return "".join(parts)
 
 
@@ -576,7 +659,7 @@ def build_dry_run_payload(raw: str, keyword_type: str) -> Dict[str, Any]:
 # Assembly
 # --------------------------------------------------------------------------- #
 
-def _assemble(subject: Mapping[str, Any], core: Mapping[str, Any], metrics: List[Mapping[str, Any]], *, dry_run: bool) -> Dict[str, Any]:
+def _assemble(subject: Mapping[str, Any], core: Mapping[str, Any], metrics: Sequence[Mapping[str, Any]], *, dry_run: bool, tool_errors: Optional[List[str]] = None) -> Dict[str, Any]:
     abstract = build_abstract(subject, core, metrics)
     records = build_records(core)
     insights = build_insights(subject, core, metrics)
@@ -596,6 +679,12 @@ def _assemble(subject: Mapping[str, Any], core: Mapping[str, Any], metrics: List
         "coverage_pct": round(populated / max(1, total_secs) * 100),
     }
     if populated == 0:
+        if subject.get("blocked_reason"):
+            abstract = f"主体未唯一解析，已停止后续数据产品调用：{subject.get('blocked_reason')}。本报告不包含主体画像或业务结论。"
+        elif tool_errors:
+            abstract = "本次查询未获得有效核心数据，且存在上游调用失败维度：" + "、".join(tool_errors) + "。不据此生成业务规模或市场结论。"
+        else:
+            abstract = "本次查询未返回有效核心数据；报告仅记录查询边界，不生成业务规模或市场结论。"
         import sys
         print("⚠️ 质量门禁警告: 所有核心分析维度均无数据", file=sys.stderr)
     title = f"{subject.get('enterprise') or '目标企业'} 网店大数据报告"
@@ -606,7 +695,7 @@ def _assemble(subject: Mapping[str, Any], core: Mapping[str, Any], metrics: List
         "subject": dict(subject),
         "abstract": abstract,
         "summary": abstract,
-        "executive_summary": [item["interpretation"] for item in insights][:5] or [abstract[:120]],
+        "executive_summary": ((["主体解析受阻：" + str(subject.get("blocked_reason")) + "；已停止主体数据调用。"] if subject.get("blocked_reason") else (["数据缺口：" + "、".join(tool_errors or []) + "未成功返回，本报告仅呈现成功维度。"] if tool_errors else [])) + ([item["interpretation"] for item in insights][:5] or [abstract[:120]])),
         "metrics": list(metrics),
         "caliber": build_caliber(subject),
         "core_analysis": dict(core),
@@ -614,13 +703,11 @@ def _assemble(subject: Mapping[str, Any], core: Mapping[str, Any], metrics: List
         "insights": insights,
         "data_source": {
             "mcp_server": "estore-mcp-server",
-            "products": [
-                {"name": "国内外网店概况", "product_id": "66d5b7df537c3f61d646c327"},
-                {"name": "电商产品画像", "product_id": "66c33eff3c0917a9a02feba8"},
-                {"name": "电商店铺信息", "product_id": "66a34ccedbee527b7a831c98"},
-            ],
+            "products": _requested_product_rows(subject),
             "generated_at": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
             "dry_run": dry_run,
+            "tool_errors": list(tool_errors or []),
+            "blocked_reason": subject.get("blocked_reason"),
             "quality_report": quality_report,
         },
     }
@@ -628,6 +715,12 @@ def _assemble(subject: Mapping[str, Any], core: Mapping[str, Any], metrics: List
 
 def build_payload(raw: str, keyword_type: str) -> Dict[str, Any]:
     resolved = resolve_enterprise_name(raw)
+    if not resolved.get("resolved"):
+        subject = build_subject(raw, resolved, keyword_type)
+        subject["blocked_reason"] = resolved.get("reason") or "企业主体未唯一解析"
+        report = _assemble(subject, build_core_analysis({}, {}, {}), [], dry_run=False)
+        report["data_source"]["blocked_reason"] = subject["blocked_reason"]
+        return report
     enterprise = resolved["enterprise"]
     mk_args: Dict[str, Any] = {"matchKeyword": enterprise, "keywordType": keyword_type}
 
@@ -636,12 +729,12 @@ def build_payload(raw: str, keyword_type: str) -> Dict[str, Any]:
     store = _safe_call(T_STORE, mk_args)
 
     subject = build_subject(raw, resolved, keyword_type)
-    core = build_core_analysis(profile, product, store)
+    core = build_core_analysis(profile, product, store, enterprise)
     metrics = build_metrics(profile, product, store)
     _derive_core_metrics(metrics, core if isinstance(core, dict) else {})
     # --- Enterprise profile enrichment (from fuzzy_search) ---
     _enrich_metrics_with_profile(metrics, resolved.get("record") if isinstance(resolved, dict) else None)
-    return _assemble(subject, core, metrics, dry_run=False)
+    return _assemble(subject, core, metrics, dry_run=False, tool_errors=_failed_tools({"国内外网店概况": profile, "电商产品画像": product, "电商店铺信息": store}))
 
 
 # --------------------------------------------------------------------------- #

@@ -21,7 +21,7 @@ EXAMPLE_CONFIG = SKILL_DIR / "assets" / "config.example.json"
 DOMAIN = "estore"
 DOMAIN_UPPER = "ESTORE"
 MCP_SERVER_DIR = "estore-mcp-server"
-MCP_SERVER_NAME = "网店大数据"
+MCP_SERVER_NAME = "电商运营数据"
 REPORT_BANNER = "网店大数据报告"
 REPORT_TYPE = "estore_analysis"
 

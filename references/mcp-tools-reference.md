@@ -7,7 +7,7 @@
 ## 通用约定
 
 - `keywordType` 枚举：`name`（企业名称）/ `nameId`（企业 id）/ `regNumber`（注册号）/ `socialCreditCode`（统一社会信用代码）。
-- 分页：`pageIndex` 从 1 开始；`pageSize` 单页最多 50。
+- 分页：仅 `estore_bigdata_fuzzy_search` 支持分页（`pageIndex` 从 1 开始；`pageSize` 单页最多 50），且仅用于企业全称补全。其余三个网店维度工具（网店概况 / 产品画像 / 店铺信息）schema **无分页参数**：只接受 `matchKeyword` + `keywordType`，单一响应即接口原生返回，请勿为其追加 `pageIndex` / `pageSize`。
 
 ---
 

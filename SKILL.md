@@ -1,6 +1,6 @@
 ---
 name: estore-report
-description: Use for generating a professional e-store big-data report (网店大数据报告) from the HandaaS estore MCP — covering 国内外网店概况、电商产品画像、电商店铺信息. Trigger when users ask for “网店大数据报告”, “网店分析报告”, “电商分析报告”, “查一家公司的网店”, “网店概况”, “电商产品画像”, “电商店铺信息”, or “企业网店画像”. Infer the canonical enterprise name (auto-fuzzy-completing a keyword), pick the right MCP tools, and produce HTML + Markdown + JSON reports automatically.
+description: Use for generating a professional e-store big-data report (网店大数据报告) from the HandaaS estore MCP — covering 国内外网店概况、电商产品画像、电商店铺信息. Trigger when users ask for “网店大数据报告”, “网店分析报告”, “电商分析报告”, “查一家公司的网店”, “网店概况”, “电商产品画像”, “电商店铺信息”, or “企业网店画像”. Infer the canonical enterprise name (auto-fuzzy-completing a keyword), pick the right MCP tools, and produce HTML + Markdown + JSON reports automatically. MCP 服务名称触发词：电商运营数据。
 ---
 
 # 网店大数据报告
@@ -26,7 +26,23 @@ description: Use for generating a professional e-store big-data report (网店�
 - 报告所有章节标题、指标卡标签必须用中文；`core_analysis.sections` 的 `title` 字段必须中文，不可显示英文 key（如 `holders`、`investments`）。
 - 指标值必须可读化：金额格式为"X 亿/万 + 币种"，地址拼接省市区，比率显示百分号。详见 `references/report-output.md` 的「数据格式约束」。
 
+## 付费调用纪律（先规划后查询）
+
+每次真实调用均按接口计费，必须先规划再查询，不得默认全量拉取：
+
+1. 每一次业务 / 工具调用都可能收费。想算 total / 页数不是无限制取全量的授权。
+2. 调用前先推导：需要哪些结论、需要哪些数据维度、工具与参数计划与最大调用预算。total 未知时，第一个必要调用同时完成 total 发现并直接作为报告数据，绝不为此多付一次（首屏响应必须复用，不重复拉取）。
+3. 优先用统计 / 画像 / 聚合接口回答能回答的问题（网店概况、产品画像优先）；明细接口仅取结论、图表、代表性记录所需的行数。只有用户明确要全面报告时才跑全面管线，绝不因为工具存在就全部调用。
+4. 取得所需证据 / 样本即停，且不超出显式预算。更多调用必须有“缺失结论”的正当理由，不能只为填满章节。不得用样本分布冒充全量结论。
+5. 复用当前任务 / 报告内的相同请求（含首屏规划数据）；不要为渲染重跑 compose/MCP，用已保存 JSON 本地重渲染。不自动重试、不重复拉取同一维度、不并行独立拉取相同数据。任何补充查询必须先列缺口并复用已返回记录。
+6. 网店概况、产品画像、店铺信息三个明细 / 画像工具在 schema 中均无 `pageIndex` / `pageSize` 参数：每次调用返回的单一响应就是该接口的原生返回，绝不追加分页参数，也不把响应宣称成超出该响应范围的上游全量枚举。只有 `estore_bigdata_fuzzy_search` 支持 `pageIndex`（从 1 起）/ `pageSize`（≤50），且仅用于企业全称补全（`pageSize: 1` 探测；多候选时停止并让用户澄清，绝不翻页枚举候选）。
+7. 预算不足以支撑用户要求的关键结论时：先说明证据缺口与预计需要追加的调用数，再请求扩大授权；不静默降级结论，也不擅自扩大计费范围。
+
+本 skill 单报告内各工具调用天然互不相同（三个详情 / 画像工具为不同产品，模糊探针仅一次），不存在可去重的相同请求；但绝不因渲染重跑 compose/MCP，一律用已保存 JSON 本地重渲染，也不自动重试或重复拉取同一维度。
+
 ## MCP 服务入口
+
+- MCP 服务当前名称：电商运营数据（连接仍使用原服务目录标识）。
 
 - 上游 MCP 项目：`handaas-mcp-server/estore-mcp-server`（位于 `HANDAAS_MCP_SERVER_ROOT` 或本仓库同级目录）。
 - Remote MCP：设置环境变量 `ESTORE_MCP_URL`（streamable-http），可选 `ESTORE_MCP_TOKEN`。
@@ -52,8 +68,8 @@ description: Use for generating a professional e-store big-data report (网店�
 
 ## Golden path for 网店大数据报告
 
-1. **解析企业全称**：若输入含“公司/集团/有限/院/厂/中心/事务所/合作社/合伙”等后缀视为全称；否则调 `estore_bigdata_fuzzy_search` 取首个命中。
-2. **调用网店工具**（入参均为 `matchKeyword`（企业全称）+ `keywordType`）：`estore_bigdata_global_online_store_profile`（网店概况）、`estore_bigdata_ecommerce_product_profile`（产品画像）、`estore_bigdata_ecommerce_store_info`（店铺信息）。
+1. **解析企业全称**：若输入含“公司/集团/有限/院/厂/中心/事务所/合作社/合伙”等后缀视为全称；否则调 `estore_bigdata_fuzzy_search`（`pageSize: 1` 探测）补全全称；多候选时不静默选首条，停止并让用户澄清。模糊查询仅用于全称补全，绝不翻页枚举。
+2. **调用网店工具**（入参均为 `matchKeyword`（企业全称）+ `keywordType`）：`estore_bigdata_global_online_store_profile`（网店概况）、`estore_bigdata_ecommerce_product_profile`（产品画像）、`estore_bigdata_ecommerce_store_info`（店铺信息）。三工具 schema 均无 `pageIndex` / `pageSize`，单一响应即接口原生返回：不追加分页参数、不翻页，也不宣称超出该响应的全量枚举。
 3. **组装统一报告**：核心分析含网店概况（KV）、电商产品画像（表或 KV）、电商店铺信息（表或 KV）。
 4. **渲染三件套**：`compose_report.py --enterprise ... --output ... --report-output ...` 直接产出 JSON + HTML + Markdown；或 `render_report.py --input ... --output ...` 重渲染。
 5. **返回路径**：返回 JSON、HTML、Markdown 文件路径，以及企业全称映射与数据口径。
@@ -95,7 +111,7 @@ python scripts/render_report.py --input output/estore.json --output output/estor
 
 - `subject`：企业全称、匹配关键词、主体类型、是否自动补全。
 - `abstract` / `summary`：封面摘要与详细摘要。
-- `metrics`：网店总数、覆盖平台、国内网店数、海外网店数、产品总数、累计销售额、店铺数等指标卡。
+- `metrics`：画像接口实际返回时展示网店总数、覆盖平台、国内/海外网店数和产品数；店铺信息接口只展示“当前响应关联网店明细”，不得回填全量网店规模（schema 无分页参数，单一响应即原生返回）。
 - `caliber`：匹配对象、匹配方式、数据范围、产品、局限。
 - `core_analysis`：网店概况（KV）、电商产品画像（表或 KV）、电商店铺信息（表或 KV）。
 - `representative_records`：代表性店铺 / 产品记录。
