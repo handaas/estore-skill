@@ -17,7 +17,7 @@
         "business-review.json": "a97d76f37d54fd1931e10da383ce13dfebc6dcb9852dae6188aac321828e5a8b",
         "browser-check.json": "ef0049facb21a5097209e291692cc91107cd9e303d99306359c70e4ce142cdb0"
       },
-      "audit_record": "../../test-records/live-replaced-20261027/01-snack-brand.md"
+      "audit_record": "../test-records/live-replaced-20261027/01-snack-brand.md"
     },
     {
       "skill": "estore-skill",
@@ -35,7 +35,7 @@
         "business-review.json": "6f27b730f7fb22a2b3d0cc8ef8f9b3398b989ca2628df8139d03e4ba514aad22",
         "browser-check.json": "9e764b36be572230cc21c85db8837671be915be400a42ece470cf4503f8049c2"
       },
-      "audit_record": "../../test-records/live-replaced-20261027/04-consumer-electronics.md"
+      "audit_record": "../test-records/live-replaced-20261027/04-consumer-electronics.md"
     },
     {
       "skill": "estore-skill",
@@ -53,7 +53,7 @@
         "business-review.json": "5e26bbc4a86804c7b756cea24cb152d691fabc7769bfcb7f8a80ef57d15fe672",
         "browser-check.json": "4a3fa4222148d086b846906bedddc19f7c711f8cc3a530928194e790f56151a0"
       },
-      "audit_record": "../../test-records/live-replaced-20261027/06-retailer-platform.md"
+      "audit_record": "../test-records/live-replaced-20261027/06-retailer-platform.md"
     },
     {
       "skill": "estore-skill",
@@ -71,7 +71,7 @@
         "business-review.json": "f23e35189c6304d48dd66f7bf19db308b7458e662d3846da276a29e91743eb05",
         "browser-check.json": "00280cd14ac05d828b0b801f9f59f4e550c445dfd1e52d00de7dafdc53002286"
       },
-      "audit_record": "../../test-records/live-replaced-20261027/09-liangpin-store-lifecycle-check.md"
+      "audit_record": "../test-records/live-replaced-20261027/09-liangpin-store-lifecycle-check.md"
     }
   ]
 }
