@@ -1,0 +1,197 @@
+[
+  {
+    "tool": "estore_bigdata_global_online_store_profile",
+    "domain": null,
+    "arguments": {
+      "matchKeyword": "北京京东世纪贸易有限公司",
+      "keywordType": "name"
+    },
+    "invocation_id": "1793070055478487000",
+    "elapsed_seconds": 1.243,
+    "status": "data",
+    "error_category": null,
+    "result_type": "dict",
+    "top_level_fields": [
+      "domesticEshopBrandList",
+      "domesticEshopCount",
+      "domesticEshopPlatformList",
+      "domesticEshopProductCount",
+      "domesticEshopProductList",
+      "domesticEshopSourceList"
+    ],
+    "row_count": null,
+    "reported_total": null,
+    "numeric_evidence": [
+      {
+        "path": "domesticEshopCount",
+        "value": 6
+      },
+      {
+        "path": "domesticEshopProductCount",
+        "value": 149
+      }
+    ],
+    "response_sha256": "245e83efa9e561bd07b691c996cb9bcc65bda9006a0c0d26695a81f09da665f9"
+  },
+  {
+    "tool": "estore_bigdata_ecommerce_product_profile",
+    "domain": null,
+    "arguments": {
+      "matchKeyword": "北京京东世纪贸易有限公司",
+      "keywordType": "name"
+    },
+    "invocation_id": "1793070055478487000",
+    "elapsed_seconds": 1.034,
+    "status": "data",
+    "error_category": null,
+    "result_type": "dict",
+    "top_level_fields": [
+      "ecShopEarliestFoundTime",
+      "ecShopItemCategories",
+      "ecShopItemCount",
+      "ecShopNumber",
+      "ecShopProducts",
+      "ecSources"
+    ],
+    "row_count": null,
+    "reported_total": null,
+    "numeric_evidence": [
+      {
+        "path": "ecShopItemCount",
+        "value": 2058
+      },
+      {
+        "path": "ecShopNumber",
+        "value": 6
+      }
+    ],
+    "response_sha256": "50823ba22189a482a746314b374c8c73356657c6a688a58d422c34f38de207de"
+  },
+  {
+    "tool": "estore_bigdata_ecommerce_store_info",
+    "domain": null,
+    "arguments": {
+      "matchKeyword": "北京京东世纪贸易有限公司",
+      "keywordType": "name"
+    },
+    "invocation_id": "1793070055478487000",
+    "elapsed_seconds": 0.646,
+    "status": "data",
+    "error_category": null,
+    "result_type": "dict",
+    "top_level_fields": [
+      "eshopList",
+      "eshopListCount",
+      "overview"
+    ],
+    "row_count": null,
+    "reported_total": null,
+    "numeric_evidence": [
+      {
+        "path": "eshopList[0].businessStatistics.fans",
+        "value": 0
+      },
+      {
+        "path": "eshopList[0].isExpired",
+        "value": 1
+      },
+      {
+        "path": "eshopList[1].businessStatistics.eshopComprehensiveScore",
+        "value": 4.65
+      },
+      {
+        "path": "eshopList[1].businessStatistics.eshopProductCount",
+        "value": 24
+      },
+      {
+        "path": "eshopList[1].businessStatistics.eshopRates.postSalesEvaluation.rate",
+        "value": 0.9
+      },
+      {
+        "path": "eshopList[1].businessStatistics.eshopRates.userEvaluation.rate",
+        "value": 0.96
+      },
+      {
+        "path": "eshopList[1].businessStatistics.fans",
+        "value": 0
+      },
+      {
+        "path": "eshopList[1].businessStatistics.favorableRate",
+        "value": 1.0
+      },
+      {
+        "path": "eshopList[1].businessStatistics.movableSalesRate",
+        "value": 0.625
+      },
+      {
+        "path": "eshopList[1].businessStatistics.totalSaleAmount",
+        "value": 5294902.0
+      },
+      {
+        "path": "eshopList[1].businessStatistics.totalSaleQty",
+        "value": 392.0
+      },
+      {
+        "path": "eshopList[1].isExpired",
+        "value": 1
+      },
+      {
+        "path": "eshopList[2].businessStatistics.fans",
+        "value": 0
+      },
+      {
+        "path": "eshopList[2].isExpired",
+        "value": 1
+      },
+      {
+        "path": "eshopList[3].businessStatistics.fans",
+        "value": 0
+      },
+      {
+        "path": "eshopList[3].isExpired",
+        "value": 0
+      },
+      {
+        "path": "eshopList[4].businessStatistics.eshopProductCount",
+        "value": 2000
+      },
+      {
+        "path": "eshopList[4].businessStatistics.fans",
+        "value": 1118232
+      },
+      {
+        "path": "eshopList[4].businessStatistics.favorableRate",
+        "value": 0.96385837
+      },
+      {
+        "path": "eshopList[4].businessStatistics.movableSalesRate",
+        "value": 0.565
+      },
+      {
+        "path": "eshopList[4].businessStatistics.totalSaleAmount",
+        "value": 881832190.0
+      },
+      {
+        "path": "eshopList[4].businessStatistics.totalSaleQty",
+        "value": 3739624.0
+      },
+      {
+        "path": "eshopList[4].isExpired",
+        "value": 0
+      },
+      {
+        "path": "eshopListCount",
+        "value": 9
+      },
+      {
+        "path": "overview.enterpriseEshopCount",
+        "value": 9
+      },
+      {
+        "path": "overview.enterpriseEshopProductsCount",
+        "value": 3095
+      }
+    ],
+    "response_sha256": "b1567b29c4e18ff23a7f4267d949a5cfe9d196200c4f3126efc87669f2211251"
+  }
+]

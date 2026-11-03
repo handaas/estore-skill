@@ -1,0 +1,32 @@
+{
+  "metric_overflows": [],
+  "document_title": "小米科技有限责任公司 网店大数据报告",
+  "title_matches": true,
+  "charts": 1,
+  "rendered_charts": 1,
+  "zero_size_charts": 0,
+  "chart_details": [
+    {
+      "width": 984,
+      "height": 300,
+      "instance": true,
+      "renderer": true,
+      "graphics": 19
+    }
+  ],
+  "page_width": 1905,
+  "viewport_width": 1920,
+  "empty_headers": 0,
+  "script_errors": [],
+  "external_resources": 0,
+  "external_asset_references": 0,
+  "ok": true,
+  "report_html_sha256": "399ccfebce8c2e05cc69e21f93f169149eb9630cca8076173e1035a954904e28",
+  "report_json_sha256": "707db7ed8a0ee65fdf788125f2dab81c420bbc3cc4e41e5498027fcb87e2373d",
+  "skill": "estore-skill",
+  "id": "04-consumer-electronics",
+  "browser": "Ego Lite",
+  "space_id": 4,
+  "offline": true,
+  "checked_at": "2026-10-27T03:03:00.467Z"
+}

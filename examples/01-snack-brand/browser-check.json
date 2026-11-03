@@ -1,0 +1,33 @@
+{
+  "metric_overflows": [],
+  "document_title": "三只松鼠股份有限公司 网店大数据报告",
+  "title_matches": true,
+  "charts": 1,
+  "rendered_charts": 1,
+  "zero_size_charts": 0,
+  "chart_details": [
+    {
+      "width": 984,
+      "height": 300,
+      "instance": true,
+      "renderer": true,
+      "graphics": 39
+    }
+  ],
+  "page_width": 1905,
+  "viewport_width": 1920,
+  "empty_headers": 0,
+  "script_errors": [],
+  "external_resources": 0,
+  "external_asset_references": 0,
+  "ok": true,
+  "report_html_sha256": "a850c993e7c5e39bdfb4cc3392c4814099db51b468c8307217f29fa68a2c9579",
+  "report_json_sha256": "30f56e1ac5b125b2512a7ac41412a4406d6bcedf24da7a93f5a548c01f90a260",
+  "screenshot": "browser.png",
+  "skill": "estore-skill",
+  "id": "01-snack-brand",
+  "browser": "Ego Lite",
+  "space_id": 4,
+  "offline": true,
+  "checked_at": "2026-10-27T03:02:59.079Z"
+}

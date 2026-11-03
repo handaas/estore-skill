@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "skill": "estore-skill",
+  "case_id": "06-retailer-platform",
+  "title": "平台零售主体画像",
+  "invocation_id": "1793070055478487000",
+  "provenance": {
+    "integrator_id": "683e574805537ace146cc05e",
+    "runner_sha256": "05777c2f2b0791cb5157aef691206606dade8df7af3b17212285b7ae74632a66",
+    "credential_policy_sha256": "bcabf08a1ca92f28357c0e57a8bae9bfa910eb1d4b204d8195ee3b7a77106eed",
+    "scenario_sha256": "f680e804c7a32bb5bbbb214b13c21fc6f1c9990c8f544229e4085c3bfba603f3",
+    "skill_source_hashes": {
+      "scripts/common.py": "aa2bf122f6272d9389d38bbdd796178098602cb3d0f2b68a9371e9499f7ed75f",
+      "scripts/compose_report.py": "4cf97c013da99ba02582984f8ada8410537fb24203bdda6155dd228521f3a632",
+      "scripts/mcp_client.py": "45aa113e6413fa443aa3b0ac0d6b586efe63de9866465bd71a507f1cd8896273",
+      "scripts/render_report.py": "9b8711b054182494c92d4e7204cadcad225eee93a54be7aa4a67aca12ddfdb3a",
+      "scripts/validate_config.py": "39ca3bae1833c65e3beb632b4768768b9fdc77903a6b4dfacd103336d349c754"
+    },
+    "upstream_source_hashes": {
+      "estore-mcp-server": "acd77f5329fbc7f778ff9a983f1d75642e18f5629a7f52323c8d29cfd0a425a7"
+    },
+    "upstream_dependency_hashes": {
+      "estore-mcp-server/server/mcp_server.py": "acd77f5329fbc7f778ff9a983f1d75642e18f5629a7f52323c8d29cfd0a425a7"
+    }
+  },
+  "source_changed_during_run": false,
+  "started_at": "2026-10-27T11:00:55+08:00",
+  "elapsed_seconds": 3.016,
+  "returncode": 0,
+  "exception_type": null,
+  "command": "python3 estore-skill/scripts/compose_report.py --enterprise '北京京东世纪贸易有限公司' --output estore-skill/output/live-replaced-20261027/06-retailer-platform/report.json --report-output estore-skill/output/live-replaced-20261027/06-retailer-platform/report.html",
+  "transport": "local MCP servers via loopback streamable-http",
+  "cache_used": false,
+  "call_count": 3,
+  "successful_data_calls": 3,
+  "empty_calls": 0,
+  "failed_calls": 0,
+  "checks": {
+    "issues": [],
+    "warnings": [],
+    "coverage_pct": 100,
+    "subject": {
+      "enterprise": "北京京东世纪贸易有限公司",
+      "matchKeyword": "北京京东世纪贸易有限公司",
+      "keywordType": "name",
+      "match_raw": "北京京东世纪贸易有限公司",
+      "resolved": true,
+      "resolve_reason": "视为企业全称"
+    },
+    "title": "北京京东世纪贸易有限公司 网店大数据报告",
+    "data_mode": null,
+    "metrics": [
+      {
+        "label": "网店总数",
+        "value": "6",
+        "hint": "国内外网店总量"
+      },
+      {
+        "label": "国内网店数",
+        "value": "6",
+        "hint": "国内网店数量"
+      },
+      {
+        "label": "覆盖平台",
+        "value": "1 个",
+        "hint": "覆盖电商平台数"
+      },
+      {
+        "label": "电商产品数",
+        "value": "149",
+        "hint": "电商在售商品总量",
+        "delta": "店均商品 24.8"
+      },
+      {
+        "label": "关联网店明细",
+        "value": "9",
+        "hint": "当前响应实际返回记录数，不代表全部店铺或自营店铺数"
+      },
+      {
+        "label": "电商平台数",
+        "value": "1",
+        "hint": "覆盖的电商平台数量"
+      },
+      {
+        "label": "当前页关联网店销量合计",
+        "value": "4411341",
+        "hint": "仅汇总当前响应关联网店，不代表查询主体自营销量"
+      },
+      {
+        "label": "商品类目数",
+        "value": "8",
+        "hint": "覆盖的商品类目总数"
+      }
+    ],
+    "quality_report": {
+      "total_sections": 4,
+      "populated_sections": 4,
+      "empty_sections": 0,
+      "coverage_pct": 100
+    },
+    "unregistered_tools": [],
+    "checks": {
+      "json_html_markdown": true,
+      "explicit_live": true,
+      "tool_calls_recorded": 3,
+      "offline_scripts": true,
+      "independent_rerender": true
+    }
+  },
+  "status": "passed",
+  "source_hashes": {
+    "scripts/common.py": "aa2bf122f6272d9389d38bbdd796178098602cb3d0f2b68a9371e9499f7ed75f",
+    "scripts/compose_report.py": "4cf97c013da99ba02582984f8ada8410537fb24203bdda6155dd228521f3a632",
+    "scripts/mcp_client.py": "45aa113e6413fa443aa3b0ac0d6b586efe63de9866465bd71a507f1cd8896273",
+    "scripts/render_report.py": "9b8711b054182494c92d4e7204cadcad225eee93a54be7aa4a67aca12ddfdb3a",
+    "scripts/validate_config.py": "39ca3bae1833c65e3beb632b4768768b9fdc77903a6b4dfacd103336d349c754"
+  }
+}

@@ -1,0 +1,235 @@
+[
+  {
+    "tool": "estore_bigdata_global_online_store_profile",
+    "domain": null,
+    "arguments": {
+      "matchKeyword": "三只松鼠股份有限公司",
+      "keywordType": "name"
+    },
+    "invocation_id": "1793070052929563000",
+    "elapsed_seconds": 0.717,
+    "status": "data",
+    "error_category": null,
+    "result_type": "dict",
+    "top_level_fields": [
+      "domesticEshopBrandList",
+      "domesticEshopCount",
+      "domesticEshopPlatformList",
+      "domesticEshopProductCount",
+      "domesticEshopProductList",
+      "domesticEshopSourceList"
+    ],
+    "row_count": null,
+    "reported_total": null,
+    "numeric_evidence": [
+      {
+        "path": "domesticEshopCount",
+        "value": 14
+      },
+      {
+        "path": "domesticEshopProductCount",
+        "value": 1669
+      }
+    ],
+    "response_sha256": "5b2e2ca9304d272773c75825338409ab4e0e25211b9620e2da9869c32d9b739a"
+  },
+  {
+    "tool": "estore_bigdata_ecommerce_product_profile",
+    "domain": null,
+    "arguments": {
+      "matchKeyword": "三只松鼠股份有限公司",
+      "keywordType": "name"
+    },
+    "invocation_id": "1793070052929563000",
+    "elapsed_seconds": 0.219,
+    "status": "data",
+    "error_category": null,
+    "result_type": "dict",
+    "top_level_fields": [
+      "ecShopAvgRates",
+      "ecShopBrands",
+      "ecShopEarliestFoundTime",
+      "ecShopItemCategories",
+      "ecShopItemCount",
+      "ecShopNumber",
+      "ecShopProducts",
+      "ecSources"
+    ],
+    "row_count": null,
+    "reported_total": null,
+    "numeric_evidence": [
+      {
+        "path": "ecShopAvgRates",
+        "value": 9.4
+      },
+      {
+        "path": "ecShopItemCount",
+        "value": 2010
+      },
+      {
+        "path": "ecShopNumber",
+        "value": 12
+      }
+    ],
+    "response_sha256": "03577aa4889ebddcc5708f04344d6ba8ec6b3a7b0cd4f8e67434790f899bbe1b"
+  },
+  {
+    "tool": "estore_bigdata_ecommerce_store_info",
+    "domain": null,
+    "arguments": {
+      "matchKeyword": "三只松鼠股份有限公司",
+      "keywordType": "name"
+    },
+    "invocation_id": "1793070052929563000",
+    "elapsed_seconds": 0.356,
+    "status": "data",
+    "error_category": null,
+    "result_type": "dict",
+    "top_level_fields": [
+      "eshopList",
+      "eshopListCount",
+      "overview"
+    ],
+    "row_count": null,
+    "reported_total": null,
+    "numeric_evidence": [
+      {
+        "path": "eshopList[0].businessStatistics.fans",
+        "value": 2
+      },
+      {
+        "path": "eshopList[0].isExpired",
+        "value": 0
+      },
+      {
+        "path": "eshopList[1].businessStatistics.eshopComprehensiveScore",
+        "value": 4.7666664
+      },
+      {
+        "path": "eshopList[1].businessStatistics.eshopProductCount",
+        "value": 20
+      },
+      {
+        "path": "eshopList[1].businessStatistics.fans",
+        "value": 44770000
+      },
+      {
+        "path": "eshopList[1].businessStatistics.favorableRate",
+        "value": 1.0
+      },
+      {
+        "path": "eshopList[1].businessStatistics.movableSalesRate",
+        "value": 0.962963
+      },
+      {
+        "path": "eshopList[1].businessStatistics.totalSaleAmount",
+        "value": 0.0
+      },
+      {
+        "path": "eshopList[1].businessStatistics.totalSaleQty",
+        "value": 0.0
+      },
+      {
+        "path": "eshopList[1].isExpired",
+        "value": 0
+      },
+      {
+        "path": "eshopList[2].businessStatistics.eshopComprehensiveScore",
+        "value": 4.8
+      },
+      {
+        "path": "eshopList[2].businessStatistics.eshopProductCount",
+        "value": 618
+      },
+      {
+        "path": "eshopList[2].businessStatistics.fans",
+        "value": 0
+      },
+      {
+        "path": "eshopList[2].businessStatistics.favorableRate",
+        "value": 0.8984506
+      },
+      {
+        "path": "eshopList[2].businessStatistics.movableSalesRate",
+        "value": 0.89158577
+      },
+      {
+        "path": "eshopList[2].businessStatistics.totalSaleAmount",
+        "value": 11539974.0
+      },
+      {
+        "path": "eshopList[2].businessStatistics.totalSaleQty",
+        "value": 179845.0
+      },
+      {
+        "path": "eshopList[2].isExpired",
+        "value": 0
+      },
+      {
+        "path": "eshopList[3].businessStatistics.eshopProductCount",
+        "value": 256
+      },
+      {
+        "path": "eshopList[3].businessStatistics.fans",
+        "value": 57867488
+      },
+      {
+        "path": "eshopList[3].businessStatistics.favorableRate",
+        "value": 0.98275864
+      },
+      {
+        "path": "eshopList[3].businessStatistics.movableSalesRate",
+        "value": 0.16015625
+      },
+      {
+        "path": "eshopList[3].businessStatistics.totalSaleAmount",
+        "value": 14508729300.0
+      },
+      {
+        "path": "eshopList[3].businessStatistics.totalSaleQty",
+        "value": 288512320.0
+      },
+      {
+        "path": "eshopList[3].isExpired",
+        "value": 0
+      },
+      {
+        "path": "eshopList[4].businessStatistics.eshopComprehensiveScore",
+        "value": 4.0
+      },
+      {
+        "path": "eshopList[4].businessStatistics.eshopRates.distributionEvaluation.rate",
+        "value": 0.8
+      },
+      {
+        "path": "eshopList[4].businessStatistics.eshopRates.postSalesEvaluation.rate",
+        "value": 0.8
+      },
+      {
+        "path": "eshopList[4].businessStatistics.eshopRates.userEvaluation.rate",
+        "value": 0.8
+      },
+      {
+        "path": "eshopList[4].businessStatistics.fans",
+        "value": 15368
+      },
+      {
+        "path": "eshopList[4].isExpired",
+        "value": 0
+      },
+      {
+        "path": "eshopListCount",
+        "value": 13
+      },
+      {
+        "path": "overview.enterpriseEshopCount",
+        "value": 13
+      },
+      {
+        "path": "overview.enterpriseEshopProductsCount",
+        "value": 2748
+      }
+    ],
+    "response_sha256": "5c99f8068c2ef7fdfcf69450a87ce85cab8d53b0f95daf0b500586219518ee87"
+  }
+]

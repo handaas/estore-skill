@@ -1,0 +1,77 @@
+{
+  "run_id": "live-replaced-20261027",
+  "cases": [
+    {
+      "skill": "estore-skill",
+      "id": "01-snack-brand",
+      "status": "passed",
+      "positive_business_pass": true,
+      "files_sha256": {
+        "report.json": "30f56e1ac5b125b2512a7ac41412a4406d6bcedf24da7a93f5a548c01f90a260",
+        "report.html": "a850c993e7c5e39bdfb4cc3392c4814099db51b468c8307217f29fa68a2c9579",
+        "report.md": "18c9f3d061fcebb7bae6690199c4539bd79c7ce4fd3165e97a85ab0c015b7b15",
+        "calls.json": "6aa75edda529087f50110c6bcc4199b16b495f7b12e47ac064efc35e1da87f16",
+        "result.json": "5ab94a0bb83439326dbceac3755776444da8ddbc02d4a1d521753e710af843a6",
+        "audit.json": "3ce8781e2d4932cd116c8824b999f294a36b51cabbb7cdd62cd25f41fa7d68b1",
+        "acceptance.json": "4a181bdd14e3d8521b40e31955c71b93c58f5aa883bc08ff2ef6b1f6f1de04ad",
+        "business-review.json": "a97d76f37d54fd1931e10da383ce13dfebc6dcb9852dae6188aac321828e5a8b",
+        "browser-check.json": "ef0049facb21a5097209e291692cc91107cd9e303d99306359c70e4ce142cdb0"
+      },
+      "audit_record": "../../test-records/live-replaced-20261027/01-snack-brand.md"
+    },
+    {
+      "skill": "estore-skill",
+      "id": "04-consumer-electronics",
+      "status": "passed",
+      "positive_business_pass": true,
+      "files_sha256": {
+        "report.json": "707db7ed8a0ee65fdf788125f2dab81c420bbc3cc4e41e5498027fcb87e2373d",
+        "report.html": "399ccfebce8c2e05cc69e21f93f169149eb9630cca8076173e1035a954904e28",
+        "report.md": "be8aeb001b72c2d4a62b494de87b4401c7e332dac64387ad327c36db876f4329",
+        "calls.json": "6dc13d6b1cb7b1f6edee7510965779aaf60b0596bfa846541d1629048a05b8ba",
+        "result.json": "e1732375e2ad72d7df1efda9c9746e1317cc2db6a94ecc70803acba11b4fd196",
+        "audit.json": "d31b96f0643aeb65d1a1f7b46427c7ff730a098b3bbb2b0f9b9fd4d8170dc0e3",
+        "acceptance.json": "bd872ba51e66a59d2031d1e1dea756501927510115d34316cb095ff95f90b7e1",
+        "business-review.json": "6f27b730f7fb22a2b3d0cc8ef8f9b3398b989ca2628df8139d03e4ba514aad22",
+        "browser-check.json": "9e764b36be572230cc21c85db8837671be915be400a42ece470cf4503f8049c2"
+      },
+      "audit_record": "../../test-records/live-replaced-20261027/04-consumer-electronics.md"
+    },
+    {
+      "skill": "estore-skill",
+      "id": "06-retailer-platform",
+      "status": "passed",
+      "positive_business_pass": true,
+      "files_sha256": {
+        "report.json": "8922261f40e9e1391dfd667eb7a09a22b2580c32a36d27b6f8c53aeefba15c32",
+        "report.html": "075c67fb537dfcd4a581c96a2e17845f30f1f670e26850594deebaddf14630c2",
+        "report.md": "2bb714f7ac12710386798f08915b951d5b828839157ece0a6118d853b5828946",
+        "calls.json": "49807f4074ba5ec5339c5a33731ee9c141835c2f4e5b156f5984fd8e867e9e1f",
+        "result.json": "f5c61c44b6e366b6f3a746cde09e840bfb4e58c33bebd2d7b6d441f6005379ac",
+        "audit.json": "2a4802eeb66175094ce64e17422845d6b28f44534aae1871689e4ff651360209",
+        "acceptance.json": "ac050f218074236041499f2970ddbe1f6d37a989d85cd591fe29740c08935050",
+        "business-review.json": "5e26bbc4a86804c7b756cea24cb152d691fabc7769bfcb7f8a80ef57d15fe672",
+        "browser-check.json": "4a3fa4222148d086b846906bedddc19f7c711f8cc3a530928194e790f56151a0"
+      },
+      "audit_record": "../../test-records/live-replaced-20261027/06-retailer-platform.md"
+    },
+    {
+      "skill": "estore-skill",
+      "id": "09-liangpin-store-lifecycle-check",
+      "status": "passed",
+      "positive_business_pass": true,
+      "files_sha256": {
+        "report.json": "3cc5eead3e4460b2ad6691445efe9caaa0cb5e90e91495f02ca26d39c7b8d48c",
+        "report.html": "12688773ac48ca1685208237da3039974db4977a8e2e4661c4cd9c6adc245102",
+        "report.md": "c1e4a93bd91e8fb42bcc580f3610210974c59065b288190c77d9eee74723b5a0",
+        "calls.json": "f0b6c1259edf1cf5402ad84a596e949c6b982ba1df80da49cf716e27036f54ac",
+        "result.json": "6aa5bd4b467d137267ce959c60334d27fac6cbd90b69b8951b848019865d505b",
+        "audit.json": "50ec6e879ca96a8fa71bee62756d241e355e7f16be05d579a97b1e682ccf73d2",
+        "acceptance.json": "57515f93a2ff88cabd469a3089892b3fd0d76942a1946c552278466d7be2c6e8",
+        "business-review.json": "f23e35189c6304d48dd66f7bf19db308b7458e662d3846da276a29e91743eb05",
+        "browser-check.json": "00280cd14ac05d828b0b801f9f59f4e550c445dfd1e52d00de7dafdc53002286"
+      },
+      "audit_record": "../../test-records/live-replaced-20261027/09-liangpin-store-lifecycle-check.md"
+    }
+  ]
+}
