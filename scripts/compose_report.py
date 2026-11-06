@@ -26,6 +26,8 @@ from common import REPORT_BANNER, REPORT_TYPE, json_dumps, load_json_file, print
 import mcp_client
 from render_report import render_html, render_markdown, html_to_pdf
 
+from estore_content_review import apply_content_review
+
 SAMPLE_PATH = pathlib.Path(__file__).resolve().parent.parent / "assets" / "report.example.json"
 
 # E-store MCP tools.
@@ -274,7 +276,7 @@ def build_caliber(subject: Mapping[str, Any]) -> Dict[str, Any]:
     products = [item["name"] for item in _requested_product_rows(subject)]
     return {
         "match_target": subject.get("enterprise") or subject.get("match_raw"),
-        "match_type": f"网店维度按企业主体匹配（keywordType={subject.get('keywordType', 'name')}）；支持企业名称/注册号/统一社会信用代码/企业 id",
+        "match_type": "网店维度按企业名称匹配；支持企业名称、注册号、统一社会信用代码和企业 ID",
         "data_scope": "、".join(products),
         "products": products,
         "limit": "数据来自电商平台公开信息；少量字段可能存在更新延迟。上游销售额字段按原口径呈现，不等同于可审计 GMV，也不用于外推企业整体交易规模。",
@@ -688,7 +690,7 @@ def _assemble(subject: Mapping[str, Any], core: Mapping[str, Any], metrics: Sequ
         import sys
         print("⚠️ 质量门禁警告: 所有核心分析维度均无数据", file=sys.stderr)
     title = f"{subject.get('enterprise') or '目标企业'} 网店大数据报告"
-    return {
+    report = {
         "report_type": REPORT_TYPE,
         "title": title,
         "banner": REPORT_BANNER,
@@ -711,6 +713,7 @@ def _assemble(subject: Mapping[str, Any], core: Mapping[str, Any], metrics: Sequ
             "quality_report": quality_report,
         },
     }
+    return apply_content_review(report)
 
 
 def build_payload(raw: str, keyword_type: str) -> Dict[str, Any]:

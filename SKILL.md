@@ -74,6 +74,8 @@ description: Use for generating a professional e-store big-data report (网店�
 4. **渲染三件套**：`compose_report.py --enterprise ... --output ... --report-output ...` 直接产出 JSON + HTML + Markdown；或 `render_report.py --input ... --output ...` 重渲染。
 5. **返回路径**：返回 JSON、HTML、Markdown 文件路径，以及企业全称映射与数据口径。
 
+- **渲染前置检查**：执行会产出含图表 HTML / PDF 的报告命令前，先验证 `node --version` 与本 skill 自带 `assets/vendor/echarts.min.js` 存在；内嵌静态 SVG 的生成需要 Node.js（推荐当前 LTS，无需 npm 包），缺失时报告生成明确报错。查看已生成的 HTML 与 Markdown 输出不需要 Node。
+
 ## 脚本速查
 
 ```bash
@@ -117,5 +119,18 @@ python scripts/render_report.py --input output/estore.json --output output/estor
 - `representative_records`：代表性店铺 / 产品记录。
 - `insights`：结构化解读（网店规模 / 平台覆盖 / 产品画像 / 店铺布局）。
 - `data_source`：MCP server、数据产品、生成时间、是否 dry-run。
+
+## 内容整理与交付审校
+
+生成后按“原始值 → 规范标签 → 证据位置”逐项整理，保留原始值供核对。`subject.keywordType`、`subject.matchKeyword` 等机器字段保留在 JSON 供系统集成，只从 caliber / 正文可见文本中移除内部代码：
+
+1. **平台 ≠ 渠道类型**：`天猫/淘宝/京东/苏宁/1688` 是平台；`直播店/直播/短视频` 是渠道类型，单列且不计入平台数。平台清单只代表“上游出现过”，不能推店铺数、销量份额或 CR2。
+2. **链接交叉核验**：店铺平台必须与链接域名核对。`taobao.com` 店铺标成“天猫”时保留原值并标注“待核实”，不静默改写；无法从域名识别时标“待核实”。同名店铺在不同平台不算重复，平台列用于消歧。
+3. **三套店铺/商品口径分开**：`网店总数`（画像）、`产品画像店铺数`、`关联网店当前样本`，以及 `网店概况商品数`、`产品画像在售商品数` 属于不同产品总体；不互相补齐、不相除、不把样本当全量。
+4. **类目清洗**：类目列表中的 `150200元` 等价格/纯数字片段标为“疑似价格值”并剔除展示，类目总数仍按上游清单条数；截断处保留 `…`，不补造类目。
+5. **数值与状态**：好评率保留原精度转百分比（`0.98275864` → `98.275864%`），评分标“满分制未说明”，销售额标“上游原值、币种单位未声明”，`0` 不等同缺失；在营/已下线只做当前样本状态统计，不推算全量比例。
+6. **交付前自检**：删除“评分高=复购高”“CR2 偏高”等无数据支撑的营销式结论；正文不出现 `keywordType` 等内部参数。
+
+离线复核已有 JSON（不调用 MCP）：`python scripts/estore_content_review.py --input <report.json> --out-dir <dir>`；纯函数为 `estore_content_review.apply_content_review(report)`。
 
 若 API 调用失败，明确报出缺失的配置 / 缺失的工具 / MCP 错误 / 参数校验错误 / 上游网络错误，给出 dry-run 命令或配置步骤，绝不暴露密钥。

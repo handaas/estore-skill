@@ -73,3 +73,17 @@ python scripts/render_report.py --input output/estore.json --output output/estor
 ```
 
 返回：JSON 路径、HTML 路径、Markdown 路径，以及企业全称映射与数据口径摘要。
+
+## 内容审校（离线）
+
+对已有 `report.json` 复核而不调用 MCP：`python scripts/estore_content_review.py --input <report.json> --out-dir <dir>`；纯函数 `estore_content_review.apply_content_review(report)`。审校顺序：
+
+1. 平台/渠道：`直播店` 等为渠道类型，不计入平台数；平台清单只表示上游出现过，不算店铺份额或 CR2。平台覆盖只认网店概况平台清单：仅有海外平台清单时保留其上游计数（不置 0），不把产品画像 `ecSources` 或链接域名推断提升为平台覆盖。
+2. 链接核验：平台与店铺链接域名交叉核对，`taobao.com` 标成天猫时保留原值并标“待核实”。
+3. 口径隔离：网店总数、产品画像店铺数、关联网店样本、网店概况商品数、产品画像在售商品数分别标注，不互相相除。`domesticEshopProductCount` 标为网店概况商品数，仅与国内网店数同产品口径计算店均；`product.ecShopItemCount` 标为产品画像在售商品数，不与网店概况店铺数相除；来源无法核对时保留原值、不猜来源、不相除。未返回网店总数时，国内网店数不得在正文或洞察中改称网店总数。
+4. 数值：好评率按原精度转百分比，评分标“满分制未说明”，销售额标“原值、单位未声明”，`0` 不等于缺失；在营/停业只统计当前样本。
+5. 措辞：删除“评分高=复购高”“CR2 偏高”等无数据支撑结论；类目中的价格片段（如 `150200元`）剔除展示并保留口径说明。
+
+交付前按最终 `sections` 与实际 body 刷新 `data_source.quality_report`（`0` 计为已填充；`coverage_pct` 仅为章节填充率）；保留原 `generated_at`。好评率显式百分比原样输出；平台域名用 `urlsplit().hostname` 做精确/后缀匹配，不接受 credentials、query 或外来域名中的片段。
+
+CLI 会拒绝 `--out-dir` 的 `report.json` 解析为 `--input` 的调用；输出目标应位于本 skill 的 `output/content-quality-review/`，不得覆盖 `examples/` 或 `test-records/`。
